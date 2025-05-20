@@ -4,10 +4,11 @@ import com.reminderapp.reminder.entity.Reminder;
 import com.reminderapp.reminder.entity.User;
 import com.reminderapp.reminder.repository.RemindersRepository;
 import com.reminderapp.reminder.repository.UserRepository;
-import com.reminderapp.reminder.service.dto.CreateReminderRequest;
-import com.reminderapp.reminder.service.dto.ReminderDto;
-import com.reminderapp.reminder.service.dto.UpdateReminderRequest;
+import com.reminderapp.reminder.dto.CreateReminderRequest;
+import com.reminderapp.reminder.dto.ReminderDto;
+import com.reminderapp.reminder.dto.UpdateReminderRequest;
 import com.reminderapp.reminder.service.mapper.ReminderMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,10 +17,14 @@ import java.time.LocalDateTime;
 public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepo;
     private final RemindersRepository reminderRepo;
+    private final ReminderMapper mapper;
 
-    public ReminderServiceImpl(UserRepository userRepo, RemindersRepository reminderRepo) {
+    public ReminderServiceImpl(UserRepository userRepo,
+                               RemindersRepository reminderRepo,
+                               ReminderMapper mapper) {
         this.userRepo = userRepo;
         this.reminderRepo = reminderRepo;
+        this.mapper = mapper;
     }
 
     @Override
@@ -31,10 +36,10 @@ public class ReminderServiceImpl implements ReminderService {
             throw new RuntimeException("Reminder date and time should be in the future");
         }
 
-        Reminder reminder = ReminderMapper.toEntity(request, user);
+        Reminder reminder = mapper.toEntity(request, user);
         Reminder saved = reminderRepo.save(reminder);
 
-        return ReminderMapper.toDto(saved);
+        return mapper.toDto(saved);
     }
 
     @Override
@@ -42,13 +47,15 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(request.reminderId())
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
 
-        reminder.setTitle(request.title());
-        reminder.setDescription(request.description());
-        reminder.setRemind_date(request.remind());
+        ReminderDto dto = new ReminderDto(request.reminderId(),
+                reminder.getUser().getUserId(),
+                request.title(),
+                request.description(),
+                request.remind());
 
+        mapper.updateEntity(dto, reminder);
         Reminder updated = reminderRepo.save(reminder);
-
-        return ReminderMapper.toDto(updated);
+        return mapper.toDto(updated);
     }
 
     @Override
@@ -56,7 +63,7 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
 
-        return ReminderMapper.toDto(reminder);
+        return mapper.toDto(reminder);
     }
 
     @Override

@@ -1,15 +1,22 @@
 package com.reminderapp.reminder.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reminders")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Reminder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id")
+    private Long reminderId;
 
     @Column(name = "title")
     private String title;
@@ -18,7 +25,7 @@ public class Reminder {
     private String description;
 
     @Column(name = "remind")
-    private LocalDateTime remind_date;
+    private LocalDateTime remind;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -27,44 +34,12 @@ public class Reminder {
     @Override
     public String toString() {
         return "Reminder{" +
-                "id=" + id +
+                "id=" + reminderId +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", remind_date=" + remind_date +
+                ", remind_date=" + remind +
                 ", user=" + user +
                 '}';
     }
 
-    //Getters and Setters
-
-    public String getTitle() {
-        return title;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getRemind_date() {
-        return remind_date;
-    }
-    public void setRemind_date(LocalDateTime remind_date) {
-        this.remind_date = remind_date;
-    }
-
-    public User getUser() {
-        return user;
-    }
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Long getId() {return id;}
-    public void setId(Long id) {this.id = id;}
 }
