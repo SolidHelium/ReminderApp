@@ -21,7 +21,6 @@ public class UserController {
     public void get() {}
 
     @PostMapping("/postUser")
-    public void post() {
-    }
+    public void post() {}
 
 }

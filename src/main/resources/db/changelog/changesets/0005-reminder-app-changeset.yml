@@ -1,9 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: 0004
-      author: Main_user
-      changes:
-        - modifyDataType:
-            tableName: reminders
-            columnName: remind
-            newDataType: timestamp
