@@ -8,7 +8,10 @@ import com.reminderapp.reminder.dto.CreateReminderRequest;
 import com.reminderapp.reminder.dto.ReminderDto;
 import com.reminderapp.reminder.dto.UpdateReminderRequest;
 import com.reminderapp.reminder.service.mapper.ReminderMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.reminderapp.reminder.specification.ReminderSpecs;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -71,5 +74,25 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
         reminderRepo.deleteById(id);
+    }
+
+    @Override
+    public Page<ReminderDto> findAll(String search, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+        Specification<Reminder> spec = Specification.where(null);
+
+        if (search != null && !search.isBlank()) {
+            spec = Specification.where(spec.and(ReminderSpecs.hasWord(search)));
+        }
+
+        if(from != null) {
+            spec = Specification.where(spec.and(ReminderSpecs.afterDateTime(from)));
+        }
+
+        if(to != null) {
+            spec = Specification.where(spec.and(ReminderSpecs.beforeDateTime(to)));
+        }
+
+        Page<Reminder> page = reminderRepo.findAll(spec, pageable);
+        return page.map(mapper::toDto);
     }
 }

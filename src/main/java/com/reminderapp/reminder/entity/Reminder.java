@@ -38,7 +38,7 @@ public class Reminder {
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", remind_date=" + remind +
-                ", user=" + user +
+                ", user=" + user.getUserId() + " " + user.getName() +
                 '}';
     }
 

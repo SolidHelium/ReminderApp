@@ -39,7 +39,6 @@ public class User {
         return "User{" +
                 "telegram='" + telegram + '\'' +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
                 ", id=" + userId +
                 '}';
