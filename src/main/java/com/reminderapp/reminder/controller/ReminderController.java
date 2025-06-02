@@ -1,21 +1,17 @@
 package com.reminderapp.reminder.controller;
 
-import com.reminderapp.reminder.entity.Reminder;
 import com.reminderapp.reminder.service.ReminderService;
 import com.reminderapp.reminder.dto.CreateReminderRequest;
 import com.reminderapp.reminder.dto.ReminderDto;
 import com.reminderapp.reminder.dto.UpdateReminderRequest;
-import com.reminderapp.reminder.service.ReminderServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/reminder")
@@ -58,7 +54,8 @@ public class ReminderController {
 
     @GetMapping("/list")
     public ResponseEntity<Page<ReminderDto>> list(
-            @RequestParam(required = false) String search,
+            @RequestParam(required = false)
+            String search,
 
             @RequestParam(required = false)
             @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")LocalDateTime from,

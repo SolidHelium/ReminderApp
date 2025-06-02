@@ -12,13 +12,24 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+    properties:
+      hibernate.format_sql: true
 
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yml
 
-  security:
-    user:
-      name: admin
-      password: admin
+app:
+  jwt:
+    secret: "my-super-secret-key-that-is-at-least-32-characters-long"
+
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          # TODO: remove hardcoded secret
+#          secret: "my-super-secret-key-that-is-at-least-32-characters-long"
+#    user:
+#      name: admin
+#      password: admin
 
 
