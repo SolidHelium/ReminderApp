@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -30,6 +32,7 @@ public class SecurityConfig {
                                 "/api/v1/user", // <- Remove later
                                 "/api/v1/user/createUser", // <- Remove later
                                 "/api/v1/user/{id}", // <- Remove later
+                                "/api/v1/user/{id}/changePassword", // <- Remove later
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness").permitAll()
                         .anyRequest().authenticated())
@@ -48,5 +51,10 @@ public class SecurityConfig {
                 .withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

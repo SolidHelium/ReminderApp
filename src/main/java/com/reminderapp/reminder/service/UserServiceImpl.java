@@ -1,5 +1,6 @@
 package com.reminderapp.reminder.service;
 
+import com.reminderapp.reminder.dto.ChangePasswordRequest;
 import com.reminderapp.reminder.dto.CreateUserRequest;
 import com.reminderapp.reminder.dto.UpdateUserRequest;
 import com.reminderapp.reminder.dto.UserDto;
@@ -7,6 +8,7 @@ import com.reminderapp.reminder.entity.User;
 import com.reminderapp.reminder.repository.UserRepository;
 import com.reminderapp.reminder.service.mapper.UserMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto createUser(CreateUserRequest request) {
@@ -24,8 +27,7 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Password must be at least 8 characters long");
         }
         User user = userMapper.createUser(request);
-        //TODO: encrypt the password!!!!!
-        user.setPassword(request.password());
+        user.setPassword(passwordEncoder.encode(request.password()));
         User crated = userRepository.save(user);
         return userMapper.toDto(crated);
     }
@@ -54,7 +56,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePassword(long id, String oldPassword, String newPassword) {
-
+    public void changePassword(long id, ChangePasswordRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            throw new RuntimeException("Password does not match");
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
     }
 }

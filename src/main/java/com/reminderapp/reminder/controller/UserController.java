@@ -1,4 +1,5 @@
 package com.reminderapp.reminder.controller;
+import com.reminderapp.reminder.dto.ChangePasswordRequest;
 import com.reminderapp.reminder.dto.CreateUserRequest;
 import com.reminderapp.reminder.dto.UpdateUserRequest;
 import com.reminderapp.reminder.dto.UserDto;
@@ -37,6 +38,13 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(request, id));
+    }
+
+    @PutMapping("/{id}/changePassword")
+    public ResponseEntity<Void> changePassword(@PathVariable long id, @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(id, request);
+        //noContent() or ok() ???
+        return ResponseEntity.noContent().build();
     }
 
 }
