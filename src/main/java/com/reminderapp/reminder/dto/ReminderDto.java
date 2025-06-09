@@ -9,4 +9,5 @@ public record ReminderDto(
         String description,
         LocalDateTime remind
 ) {}
+//TODO: Keep only one reminder DTO
 

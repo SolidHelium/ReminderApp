@@ -4,6 +4,7 @@ import com.reminderapp.reminder.service.ReminderService;
 import com.reminderapp.reminder.dto.CreateReminderRequest;
 import com.reminderapp.reminder.dto.ReminderDto;
 import com.reminderapp.reminder.dto.UpdateReminderRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,14 +14,15 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/reminder")
 public class ReminderController {
     private final ReminderService reminderService;
 
-    public ReminderController(ReminderService reminderService) {
-        this.reminderService = reminderService;
-    }
+//    public ReminderController(ReminderService reminderService) {
+//        this.reminderService = reminderService;
+//    }
 
     @PostMapping
     public ResponseEntity<ReminderDto> create(@RequestBody CreateReminderRequest request) {

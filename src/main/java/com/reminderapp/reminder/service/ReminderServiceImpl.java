@@ -9,6 +9,7 @@ import com.reminderapp.reminder.dto.ReminderDto;
 import com.reminderapp.reminder.dto.UpdateReminderRequest;
 import com.reminderapp.reminder.service.mapper.ReminderMapper;
 import com.reminderapp.reminder.specification.ReminderSpecs;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,18 +18,12 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
+@AllArgsConstructor
 public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepo;
     private final RemindersRepository reminderRepo;
     private final ReminderMapper mapper;
 
-    public ReminderServiceImpl(UserRepository userRepo,
-                               RemindersRepository reminderRepo,
-                               ReminderMapper mapper) {
-        this.userRepo = userRepo;
-        this.reminderRepo = reminderRepo;
-        this.mapper = mapper;
-    }
 
     @Override
     public ReminderDto createReminder(CreateReminderRequest request) {
@@ -50,7 +45,8 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(request.reminderId())
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
 
-        ReminderDto dto = new ReminderDto(request.reminderId(),
+        ReminderDto dto = new ReminderDto(
+                request.reminderId(),
                 reminder.getUser().getUserId(),
                 request.title(),
                 request.description(),

@@ -1,26 +1,42 @@
 package com.reminderapp.reminder.controller;
-import com.reminderapp.reminder.repository.RemindersRepository;
-import com.reminderapp.reminder.repository.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.reminderapp.reminder.dto.CreateUserRequest;
+import com.reminderapp.reminder.dto.UpdateUserRequest;
+import com.reminderapp.reminder.dto.UserDto;
+import com.reminderapp.reminder.service.UserService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/user")
 public class UserController {
-    private final UserRepository userRepo;
-    private final RemindersRepository remRepo;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository, RemindersRepository remindersRepository) {
-        this.userRepo = userRepository;
-        this.remRepo = remindersRepository;
+
+    @PostMapping("/createUser")
+    public ResponseEntity<UserDto> createUser(@RequestBody CreateUserRequest request) {
+        UserDto userDto = userService.createUser(request);
+        URI location = URI.create("/api/v1/user/" + userDto.userId());
+        return ResponseEntity.created(location).body(userDto);
     }
 
-    @GetMapping("/getUser")
-    public void get() {}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 
-    @PostMapping("/postUser")
-    public void post() {}
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(userService.updateUser(request, id));
+    }
 
 }

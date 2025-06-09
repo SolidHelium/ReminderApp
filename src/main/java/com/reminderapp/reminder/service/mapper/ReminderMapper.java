@@ -4,10 +4,7 @@ import com.reminderapp.reminder.dto.CreateReminderRequest;
 import com.reminderapp.reminder.dto.ReminderDto;
 import com.reminderapp.reminder.entity.Reminder;
 import com.reminderapp.reminder.entity.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ReminderMapper {
@@ -19,5 +16,6 @@ public interface ReminderMapper {
     ReminderDto toDto(Reminder entity);
 
     @Mapping(target = "user", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(ReminderDto dto, @MappingTarget Reminder entity);
 }

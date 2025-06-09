@@ -24,6 +24,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/v1/reminder", // <- Remove later
+                                "/api/v1/reminder/{id}", // <- Remove later
+                                "/api/v1/reminder/list", // <- Remove later
+                                "/api/v1/user", // <- Remove later
+                                "/api/v1/user/createUser", // <- Remove later
+                                "/api/v1/user/{id}", // <- Remove later
                                 "/actuator/health/liveness",
                                 "/actuator/health/readiness").permitAll()
                         .anyRequest().authenticated())

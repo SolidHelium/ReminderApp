@@ -1,5 +1,6 @@
 package com.reminderapp.reminder.entity;
 
+import com.reminderapp.reminder.specification.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,15 +18,20 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long userId;
+    private Long userId;
 
     @Column(name = "user_name", nullable = false)
     private String name;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "email")
+    //TODO: Map enums using converter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private UserRole role = UserRole.USER;
+
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "telegram")
@@ -37,10 +43,11 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "telegram='" + telegram + '\'' +
-                ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
-                ", id=" + userId +
+                ", id=" + userId + '\'' +
+                ", role=" + role.getAuthority() + '\'' +
+                ", email='" + email + '\'' +
+                "telegram='" + telegram + '\'' +
                 '}';
     }
 

@@ -21,15 +21,3 @@ spring:
 app:
   jwt:
     secret: "my-super-secret-key-that-is-at-least-32-characters-long"
-
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          # TODO: remove hardcoded secret
-#          secret: "my-super-secret-key-that-is-at-least-32-characters-long"
-#    user:
-#      name: admin
-#      password: admin
-
-
