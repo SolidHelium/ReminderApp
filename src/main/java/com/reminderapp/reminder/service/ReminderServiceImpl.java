@@ -14,16 +14,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepo;
     private final RemindersRepository reminderRepo;
     private final ReminderMapper mapper;
 
+    //TODO: Proper exception handling
 
     @Override
     public ReminderDto createReminder(CreateReminderRequest request) {
@@ -58,6 +61,7 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReminderDto getReminderById(long id) {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
@@ -73,6 +77,7 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ReminderDto> findAll(String search, LocalDateTime from, LocalDateTime to, Pageable pageable) {
         Specification<Reminder> spec = Specification.where(null);
 

@@ -43,7 +43,6 @@ public class UserController {
     @PutMapping("/{id}/changePassword")
     public ResponseEntity<Void> changePassword(@PathVariable long id, @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request);
-        //noContent() or ok() ???
         return ResponseEntity.noContent().build();
     }
 

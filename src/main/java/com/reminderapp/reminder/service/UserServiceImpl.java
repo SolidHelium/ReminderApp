@@ -10,26 +10,33 @@ import com.reminderapp.reminder.service.mapper.UserMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @AllArgsConstructor
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    //TODO: Proper exception handling
 
     @Override
     public UserDto createUser(CreateUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new RuntimeException("User with email " + request.email() + " already exists");
         }
+        if (request.email() == null || request.email().isEmpty()) {
+            throw new RuntimeException("Email cannot be empty");
+        }
         if (request.password() == null || request.password().length() < 8) {
             throw new RuntimeException("Password must be at least 8 characters long");
         }
         User user = userMapper.createUser(request);
         user.setPassword(passwordEncoder.encode(request.password()));
-        User crated = userRepository.save(user);
-        return userMapper.toDto(crated);
+        User created = userRepository.save(user);
+        return userMapper.toDto(created);
     }
 
     @Override
@@ -42,6 +49,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto getUserById(long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
@@ -63,5 +71,6 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Password does not match");
         }
         user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 }
