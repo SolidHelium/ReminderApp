@@ -1,60 +1,59 @@
 package com.reminderapp.reminder.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerAutoConfiguration;
+import com.reminderapp.reminder.security.CustomUserDetailsService;
+import com.reminderapp.reminder.security.JwtRequestFilter;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
+@AllArgsConstructor
 public class AuthorizationServerConfig {
 
-    private final String jwtSecret;
-
-    public AuthorizationServerConfig(@Value("{$app.jwt.secret}") String secret) {
-        this.jwtSecret = secret;
-    }
+    private final CustomUserDetailsService userDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     @Order(1)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                OAuth2AuthorizationServerConfigurer.authorizationServer();
+    public SecurityFilterChain authorizationServerSecurityFilterChain(
+            HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
-                .securityMatcher("/oauth2/**")
-                .authorizeHttpRequests(authorize ->
-                        authorize.anyRequest().authenticated()
-                        )
-                .csrf(csrf -> csrf.disable())
-                .with(
-                        OAuth2AuthorizationServerConfigurer.authorizationServer(),
-                        Customizer.withDefaults()
+                .securityMatcher(
+                        "/auth/**",
+                        "/oauth2/token",
+                        "/oauth2/authorize",
+                        "/actuator/**"
                 )
-//                .exceptionHandling(exception ->
-//                        exception
-//                                .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
-//                                .accessDeniedHandler(new OAuth2AccessDeniedHandler())
-        ;
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .sessionManagement(sm -> sm
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                );
         return http.build();
     }
 
-//    @Bean
-//    public RegisteredClientRepository registeredClientRepository() {
-//        RegisteredClient registeredClient = RegisteredClient().withId(UUID.randomUUID().toString());
-//        return new InMemoryRegisteredClientRepository(jwtSecret);
-//    }
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(provider);
+    }
+
 }

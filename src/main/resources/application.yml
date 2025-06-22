@@ -21,3 +21,7 @@ spring:
 app:
   jwt:
     secret: "my-super-secret-key-that-is-at-least-32-characters-long"
+
+logging:
+  level:
+    org.springframework.security: DEBUG
