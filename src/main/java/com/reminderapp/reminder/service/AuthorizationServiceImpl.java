@@ -10,9 +10,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class AuthorizationServiceImpl implements AuthorizationService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
@@ -24,10 +26,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         String email = loginRequest.email();
         String password = loginRequest.password();
 
-        if (email == null) {
+        if (email == null || email.isBlank()) {
             throw new RuntimeException("Email is not entered");
         }
-        if (password == null) {
+        if (password == null || password.isBlank()) {
             throw new RuntimeException("Password is not entered");
         }
 
