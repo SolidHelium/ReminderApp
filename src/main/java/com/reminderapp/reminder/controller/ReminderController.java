@@ -1,5 +1,6 @@
 package com.reminderapp.reminder.controller;
 
+import com.reminderapp.reminder.service.NotificationService;
 import com.reminderapp.reminder.service.ReminderService;
 import com.reminderapp.reminder.dto.CreateReminderRequest;
 import com.reminderapp.reminder.dto.ReminderDto;
@@ -19,10 +20,6 @@ import java.time.LocalDateTime;
 @RequestMapping("/api/v1/reminder")
 public class ReminderController {
     private final ReminderService reminderService;
-
-//    public ReminderController(ReminderService reminderService) {
-//        this.reminderService = reminderService;
-//    }
 
     @PostMapping
     public ResponseEntity<ReminderDto> create(@RequestBody CreateReminderRequest request) {

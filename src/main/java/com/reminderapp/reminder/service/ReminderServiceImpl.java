@@ -25,6 +25,7 @@ public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepo;
     private final RemindersRepository reminderRepo;
     private final ReminderMapper mapper;
+    private final ReminderSchedulerService schedulerService;
 
     //TODO: Proper exception handling
 
@@ -39,7 +40,7 @@ public class ReminderServiceImpl implements ReminderService {
 
         Reminder reminder = mapper.toEntity(request, user);
         Reminder saved = reminderRepo.save(reminder);
-
+        schedulerService.scheduleReminder(saved);
         return mapper.toDto(saved);
     }
 
@@ -57,6 +58,7 @@ public class ReminderServiceImpl implements ReminderService {
 
         mapper.updateEntity(dto, reminder);
         Reminder updated = reminderRepo.save(reminder);
+        schedulerService.rescheduleReminder(updated);
         return mapper.toDto(updated);
     }
 
@@ -65,7 +67,7 @@ public class ReminderServiceImpl implements ReminderService {
     public ReminderDto getReminderById(long id) {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
-
+        //sender.sendAllNotifications(reminder);//TODO: <-- REMOVE
         return mapper.toDto(reminder);
     }
 
@@ -74,6 +76,7 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
         reminderRepo.deleteById(id);
+        schedulerService.cancelReminder(reminder);
     }
 
     @Override
