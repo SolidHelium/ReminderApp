@@ -16,6 +16,8 @@ public class EmailNotificationService implements NotificationService {
     private static Logger log = LoggerFactory.getLogger(EmailNotificationService.class);
     private final JavaMailSender mailSender;
     private String emailSenderAddress;
+    @Value("${app.notification.email.enabled}")
+    private boolean isEnabled;
 
     @Autowired
     public EmailNotificationService(
@@ -48,9 +50,8 @@ public class EmailNotificationService implements NotificationService {
         }
     }
 
-    //TODO: Notification enabling/disabling system
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
     }
 }

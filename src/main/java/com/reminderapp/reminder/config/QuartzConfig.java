@@ -26,11 +26,13 @@ public class QuartzConfig {
         return new SpringBeanJobFactory();
     }
 
+    //TODO: Set properties in application.yml as normal people usually do
+
     private Properties quartzProperties() {
         Properties properties = new Properties();
         properties.put("org.quartz.scheduler.instanceName"      , "ReminderScheduler"                               );
         properties.put("org.quartz.scheduler.instanceId"        , "AUTO"                                            );
-        //properties.put("org.quartz.jobStore.class"              , "org.quartz.impl.jdbcjobstore.JobStoreTX"         );
+        //properties.put("org.quartz.jobStore.class"            , "org.quartz.impl.jdbcjobstore.JobStoreTX"         );
         properties.put("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate" );
         properties.put("org.quartz.jobStore.tablePrefix"        , "QRTZ_"                                           );
         properties.put("org.quartz.jobStore.isClustered"        , "false"                                           );
