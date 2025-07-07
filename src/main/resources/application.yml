@@ -12,13 +12,61 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: true
+    properties:
+      hibernate.format_sql: true
 
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yml
 
-  security:
-    user:
-      name: admin
-      password: admin
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
+#    properties: #TODO: Delete this I guess... Or delete properties from QuartzConfig and set them here properly
+#      org:
+#        quartz:
+#          scheduler:
+#            instanceName: ReminderScheduler
+#            instanceId: AUTO
+#          jobStore:
+#            class: org.quartz.impl.jdbcjobstore.JobStoreTX
+#            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+#            tablePrefix: QRTZ_
+#            isClustered: false
+#          threadPool:
+#            threadCount: 10
+
+  # TODO: remove email and password BEFORE COMMIT
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: a@mail.com
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# TODO: remove secret and bot token
+app:
+  jwt:
+    secret: "my-super-secret-key-that-is-at-least-32-characters-long"
+
+  notification:
+    email:
+      enabled: true
+      from: sender-email@mail.com # This shit set incorrectly but it somehow works
+
+    telegram:
+      enabled: true
+      bot-token: token
+      bot-username: java_reminder_app_bot
 
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.reminderapp.reminder: DEBUG
+    org.quartz: INFO

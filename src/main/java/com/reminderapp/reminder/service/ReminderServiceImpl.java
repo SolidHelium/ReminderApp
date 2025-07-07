@@ -4,23 +4,30 @@ import com.reminderapp.reminder.entity.Reminder;
 import com.reminderapp.reminder.entity.User;
 import com.reminderapp.reminder.repository.RemindersRepository;
 import com.reminderapp.reminder.repository.UserRepository;
-import com.reminderapp.reminder.service.dto.CreateReminderRequest;
-import com.reminderapp.reminder.service.dto.ReminderDto;
-import com.reminderapp.reminder.service.dto.UpdateReminderRequest;
+import com.reminderapp.reminder.dto.CreateReminderRequest;
+import com.reminderapp.reminder.dto.ReminderDto;
+import com.reminderapp.reminder.dto.UpdateReminderRequest;
 import com.reminderapp.reminder.service.mapper.ReminderMapper;
+import com.reminderapp.reminder.specification.ReminderSpecs;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
 @Service
+@AllArgsConstructor
+@Transactional
 public class ReminderServiceImpl implements ReminderService {
     private final UserRepository userRepo;
     private final RemindersRepository reminderRepo;
+    private final ReminderMapper mapper;
+    private final ReminderSchedulerService schedulerService;
 
-    public ReminderServiceImpl(UserRepository userRepo, RemindersRepository reminderRepo) {
-        this.userRepo = userRepo;
-        this.reminderRepo = reminderRepo;
-    }
+    //TODO: Proper exception handling
 
     @Override
     public ReminderDto createReminder(CreateReminderRequest request) {
@@ -31,10 +38,10 @@ public class ReminderServiceImpl implements ReminderService {
             throw new RuntimeException("Reminder date and time should be in the future");
         }
 
-        Reminder reminder = ReminderMapper.toEntity(request, user);
+        Reminder reminder = mapper.toEntity(request, user);
         Reminder saved = reminderRepo.save(reminder);
-
-        return ReminderMapper.toDto(saved);
+        schedulerService.scheduleReminder(saved);
+        return mapper.toDto(saved);
     }
 
     @Override
@@ -42,21 +49,26 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(request.reminderId())
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
 
-        reminder.setTitle(request.title());
-        reminder.setDescription(request.description());
-        reminder.setRemind_date(request.remind());
+        ReminderDto dto = new ReminderDto(
+                request.reminderId(),
+                reminder.getUser().getUserId(),
+                request.title(),
+                request.description(),
+                request.remind());
 
+        mapper.updateEntity(dto, reminder);
         Reminder updated = reminderRepo.save(reminder);
-
-        return ReminderMapper.toDto(updated);
+        schedulerService.rescheduleReminder(updated);
+        return mapper.toDto(updated);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ReminderDto getReminderById(long id) {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
-
-        return ReminderMapper.toDto(reminder);
+        //sender.sendAllNotifications(reminder);//TODO: <-- REMOVE
+        return mapper.toDto(reminder);
     }
 
     @Override
@@ -64,5 +76,27 @@ public class ReminderServiceImpl implements ReminderService {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
         reminderRepo.deleteById(id);
+        schedulerService.cancelReminder(reminder);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ReminderDto> findAll(String search, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+        Specification<Reminder> spec = Specification.where(null);
+
+        if (search != null && !search.isBlank()) {
+            spec = Specification.where(spec.and(ReminderSpecs.hasWord(search)));
+        }
+
+        if(from != null) {
+            spec = Specification.where(spec.and(ReminderSpecs.afterDateTime(from)));
+        }
+
+        if(to != null) {
+            spec = Specification.where(spec.and(ReminderSpecs.beforeDateTime(to)));
+        }
+
+        Page<Reminder> page = reminderRepo.findAll(spec, pageable);
+        return page.map(mapper::toDto);
     }
 }

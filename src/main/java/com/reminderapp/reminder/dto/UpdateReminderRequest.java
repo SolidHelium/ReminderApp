@@ -1,4 +1,4 @@
-package com.reminderapp.reminder.service.dto;
+package com.reminderapp.reminder.dto;
 
 
 import java.time.LocalDateTime;

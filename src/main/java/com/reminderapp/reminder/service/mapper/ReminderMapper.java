@@ -1,29 +1,21 @@
 package com.reminderapp.reminder.service.mapper;
 
+import com.reminderapp.reminder.dto.CreateReminderRequest;
+import com.reminderapp.reminder.dto.ReminderDto;
 import com.reminderapp.reminder.entity.Reminder;
 import com.reminderapp.reminder.entity.User;
-import com.reminderapp.reminder.service.dto.CreateReminderRequest;
-import com.reminderapp.reminder.service.dto.ReminderDto;
+import org.mapstruct.*;
 
-public class ReminderMapper {
-    public static Reminder toEntity(CreateReminderRequest createRemReq, User user) {
-        Reminder reminder = new Reminder();
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ReminderMapper {
 
-        reminder.setTitle(createRemReq.title());
-        reminder.setDescription(createRemReq.description());
-        reminder.setRemind_date(createRemReq.remind());
-        reminder.setUser(user);
+    @Mapping(target = "reminderId", ignore = true)
+    Reminder toEntity(CreateReminderRequest createRemRequest, User user);
 
-        return reminder;
-    }
+    @Mapping(source = "entity.user.userId", target = "userId")
+    ReminderDto toDto(Reminder entity);
 
-    public static ReminderDto toDto(Reminder reminder) {
-        return new ReminderDto(
-                reminder.getId(),
-                reminder.getUser().getId(),
-                reminder.getTitle(),
-                reminder.getDescription(),
-                reminder.getRemind_date()
-                );
-    }
+    @Mapping(target = "user", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntity(ReminderDto dto, @MappingTarget Reminder entity);
 }

@@ -1,49 +1,49 @@
 package com.reminderapp.reminder.controller;
-import com.reminderapp.reminder.entity.Reminder;
-import com.reminderapp.reminder.entity.User;
-import com.reminderapp.reminder.repository.RemindersRepository;
-import com.reminderapp.reminder.repository.UserRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.reminderapp.reminder.dto.ChangePasswordRequest;
+import com.reminderapp.reminder.dto.CreateUserRequest;
+import com.reminderapp.reminder.dto.UpdateUserRequest;
+import com.reminderapp.reminder.dto.UserDto;
+import com.reminderapp.reminder.service.UserService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.net.URI;
 
+@AllArgsConstructor
 @RestController
-@RequestMapping("/repo")
+@RequestMapping("/api/v1/user")
 public class UserController {
-    private final UserRepository userRepo;
-    private final RemindersRepository remRepo;
+    private final UserService userService;
 
-    public UserController(UserRepository repository, RemindersRepository remindersRepository) {
-        this.remRepo = remindersRepository;
-        this.userRepo = repository;
+
+    @PostMapping("/createUser")
+    public ResponseEntity<UserDto> createUser(@RequestBody CreateUserRequest request) {
+        UserDto userDto = userService.createUser(request);
+        URI location = URI.create("/api/v1/user/" + userDto.userId());
+        return ResponseEntity.created(location).body(userDto);
     }
 
-    @GetMapping("/get")
-    public void get() {}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 
-    @PostMapping("/post")
-    public String post() {
-        User user = new User();
-        user.setName("Sergei");
-        user.setEmail("sergei@gmail.com");
-        user.setPassword("sergeiPassword");
-        user.setTelegram("@sergeiTelegram");
-        userRepo.save(user);
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
 
-        Reminder reminder = new Reminder();
-        reminder.setUser(user);
-        reminder.setTitle("sergeiTitle");
-        reminder.setDescription("sergeiDescription");
-        reminder.setRemind_date(LocalDateTime.now().plusMonths(1));
-        remRepo.save(reminder);
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(userService.updateUser(request, id));
+    }
 
-        long i = userRepo.count();
-        long y = remRepo.count();
-
-        return "Users: " + i + "Reminders: " + y + "/n" + reminder + "/n" + user;
+    @PutMapping("/{id}/changePassword")
+    public ResponseEntity<Void> changePassword(@PathVariable long id, @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(id, request);
+        return ResponseEntity.noContent().build();
     }
 
 }

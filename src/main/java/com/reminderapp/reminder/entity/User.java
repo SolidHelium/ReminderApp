@@ -1,24 +1,37 @@
 package com.reminderapp.reminder.entity;
 
+import com.reminderapp.reminder.specification.UserRole;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "app_user")
+@Getter
+@Setter
+@NoArgsConstructor
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name = "id")
+    private Long userId;
 
     @Column(name = "user_name", nullable = false)
     private String name;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "email")
+    //TODO: Map enums using converter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private UserRole role = UserRole.USER;
+
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "telegram")
@@ -30,61 +43,12 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "telegram='" + telegram + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
-                ", id=" + id +
+                ", id=" + userId + '\'' +
+                ", role=" + role.getAuthority() + '\'' +
+                ", email='" + email + '\'' +
+                "telegram='" + telegram + '\'' +
                 '}';
     }
 
-    //Getters and Setters
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getTelegram() {
-        return telegram;
-    }
-
-    public void setTelegram(String telegram) {
-        this.telegram = telegram;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public List<Reminder> getReminders() {
-        return reminders;
-    }
-
-    public void setReminders(List<Reminder> reminders) {
-        this.reminders = reminders;
-    }
 }
