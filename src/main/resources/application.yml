@@ -40,8 +40,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: a@mail.com
-    password: password
+    username: somerandomemail@gmail.com #TODO: insert correct mail to send emails
+    password: nope #TODO: insert correct password to send messages
     properties:
       mail:
         smtp:
@@ -61,7 +61,7 @@ app:
 
     telegram:
       enabled: true
-      bot-token: token
+      bot-token: 7962856733:AAEzVDX9VINzgi4QPa61XgJEV68-AzvIWfs
       bot-username: java_reminder_app_bot
 
 

@@ -56,6 +56,9 @@ public class ReminderServiceImpl implements ReminderService {
                 request.description(),
                 request.remind());
 
+        if (dto.remind().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Reminder date and time should be in the future");
+        }
         mapper.updateEntity(dto, reminder);
         Reminder updated = reminderRepo.save(reminder);
         schedulerService.rescheduleReminder(updated);
@@ -67,7 +70,6 @@ public class ReminderServiceImpl implements ReminderService {
     public ReminderDto getReminderById(long id) {
         Reminder reminder = reminderRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
-        //sender.sendAllNotifications(reminder);//TODO: <-- REMOVE
         return mapper.toDto(reminder);
     }
 

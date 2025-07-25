@@ -57,10 +57,12 @@ public class ReminderController {
             String search,
 
             @RequestParam(required = false)
-            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")LocalDateTime from,
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+            LocalDateTime from,
 
             @RequestParam(required = false)
-            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")LocalDateTime to,
+            @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+            LocalDateTime to,
 
             Pageable pageable
     ) {
