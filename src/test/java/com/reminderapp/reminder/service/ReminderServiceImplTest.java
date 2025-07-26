@@ -72,7 +72,6 @@ class ReminderServiceImplTest {
     @Nested
     class CreateReminderTests {
         private final CreateReminderRequest createReminderRequest = new CreateReminderRequest(
-                1L,
                 "Title",
                 "Description",
                 futureTime
@@ -81,14 +80,14 @@ class ReminderServiceImplTest {
         @Test
         void reminderCreated_validRequest() {
             when(reminderRepository.save(reminder)).thenReturn(reminder);
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail("email")).thenReturn(Optional.of(user));
             when(reminderMapper.toEntity(createReminderRequest, user)).thenReturn(reminder);
             when(reminderMapper.toDto(reminder)).thenReturn(reminderDto);
 
-            ReminderDto result = reminderService.createReminder(createReminderRequest);
+            ReminderDto result = reminderService.createReminder(createReminderRequest, "email");
             assertThat(result).isNotNull().isEqualTo(reminderDto);
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail("email");
             verify(reminderMapper).toEntity(createReminderRequest, user);
             verify(reminderRepository).save(reminder);
             verify(reminderSchedulerService).scheduleReminder(reminder);
@@ -97,31 +96,30 @@ class ReminderServiceImplTest {
 
         @Test
         void userNotFound_ExceptionThrown() {
-            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            when(userRepository.findByEmail("email")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> reminderService.createReminder(createReminderRequest))
+            assertThatThrownBy(() -> reminderService.createReminder(createReminderRequest, "email"))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("User not found");
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail("email");
             verifyNoInteractions(reminderMapper, reminderRepository, reminderSchedulerService);
         }
 
         @Test
         void invalidTime_ExceptionThrown() {
             CreateReminderRequest pastRequest = new CreateReminderRequest(
-                    1L,
                     "Title",
                     "Description",
                     pastTime
             );
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail("email")).thenReturn(Optional.of(user));
 
-            assertThatThrownBy(() -> reminderService.createReminder(pastRequest))
+            assertThatThrownBy(() -> reminderService.createReminder(pastRequest, "email"))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Reminder date and time should be in the future");
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail("email");
             verifyNoInteractions(reminderMapper, reminderRepository, reminderSchedulerService);
         }
 

@@ -61,7 +61,7 @@ app:
 
     telegram:
       enabled: true
-      bot-token: 7962856733:AAEzVDX9VINzgi4QPa61XgJEV68-AzvIWfs
+      bot-token:
       bot-username: java_reminder_app_bot
 
 
