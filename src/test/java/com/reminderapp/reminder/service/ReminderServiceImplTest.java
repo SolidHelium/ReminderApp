@@ -9,19 +9,17 @@ import com.reminderapp.reminder.repository.RemindersRepository;
 import com.reminderapp.reminder.repository.UserRepository;
 import com.reminderapp.reminder.service.mapper.ReminderMapper;
 import com.reminderapp.reminder.specification.UserRole;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -42,6 +40,7 @@ class ReminderServiceImplTest {
     private User user;
     private final LocalDateTime futureTime = LocalDateTime.now().plusDays(1L);
     private final LocalDateTime pastTime = LocalDateTime.now().minusDays(1L);
+    private final String userLogin = "validemail@email.com";
 
     private final ReminderDto reminderDto = new ReminderDto(
             1L,
@@ -53,20 +52,39 @@ class ReminderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        user = new User();
-        user.setUserId(1L);
-        user.setName("testUser");
-        user.setPassword("valid_password");
-        user.setRole(UserRole.USER);
-        user.setEmail("validemail@email.com");
-        user.setTelegram("123456789");
+        user = createTestUser(
+                1L,
+                "testUser",
+                "valid_password",
+                UserRole.USER,
+                "validemail@email.com",
+                "123456789");
+        reminder = createTestReminder(
+                1L,
+                "Title",
+                "Description",
+                futureTime,
+                user);
+    }
 
-        reminder = new Reminder();
-        reminder.setReminderId(1L);
-        reminder.setTitle("Title");
-        reminder.setDescription("Description");
-        reminder.setRemind(futureTime);
-        reminder.setUser(user);
+    private Reminder createTestReminder(long id, String title, String description, LocalDateTime remind, User remUser) {
+        Reminder newReminder = new Reminder();
+        newReminder.setReminderId(id);
+        newReminder.setTitle(title);
+        newReminder.setDescription(description);
+        newReminder.setRemind(remind);
+        newReminder.setUser(remUser);
+        return newReminder;
+    }
+    private User createTestUser(long id, String name, String password, UserRole role, String email, String telegram) {
+        User newUser = new User();
+        newUser.setUserId(id);
+        newUser.setName(name);
+        newUser.setPassword(password);
+        newUser.setRole(role);
+        newUser.setEmail(email);
+        newUser.setTelegram(telegram);
+        return newUser;
     }
 
     @Nested
@@ -137,7 +155,7 @@ class ReminderServiceImplTest {
 
         @Test
         void reminderUpdated_ValidRequest() {
-            when(reminderRepository.findById(1L)).thenReturn(Optional.of(reminder));
+            when(reminderRepository.findById(updateReminderRequest.reminderId())).thenReturn(Optional.of(reminder));
             ReminderDto updatedDto = new ReminderDto(
                     1L,
                     1L,
@@ -148,10 +166,10 @@ class ReminderServiceImplTest {
             when(reminderRepository.save(reminder)).thenReturn(reminder);
             when(reminderMapper.toDto(reminder)).thenReturn(updatedDto);
 
-            ReminderDto result = reminderService.updateReminder(updateReminderRequest);
+            ReminderDto result = reminderService.updateReminder(updateReminderRequest, userLogin);
             assertThat(result).isNotNull().isEqualTo(updatedDto);
 
-            verify(reminderRepository).findById(1L);
+            verify(reminderRepository).findById(updateReminderRequest.reminderId());
             verify(reminderMapper).updateEntity(updatedDto, reminder);
             verify(reminderRepository).save(reminder);
             verify(reminderSchedulerService).rescheduleReminder(reminder);
@@ -162,7 +180,7 @@ class ReminderServiceImplTest {
         void reminderNotFound_ExceptionThrown() {
             when(reminderRepository.findById(1L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> reminderService.updateReminder(updateReminderRequest))
+            assertThatThrownBy(() -> reminderService.updateReminder(updateReminderRequest, userLogin))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Reminder not found");
 
@@ -180,13 +198,13 @@ class ReminderServiceImplTest {
                     pastTime
             );
 
-            when(reminderRepository.findById(1L)).thenReturn(Optional.of(reminder));
+            when(reminderRepository.findById(invalidTimeUpdateRequest.reminderId())).thenReturn(Optional.of(reminder));
 
-            assertThatThrownBy(() -> reminderService.updateReminder(invalidTimeUpdateRequest))
+            assertThatThrownBy(() -> reminderService.updateReminder(invalidTimeUpdateRequest, userLogin))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Reminder date and time should be in the future");
 
-            verify(reminderRepository).findById(1L);
+            verify(reminderRepository).findById(invalidTimeUpdateRequest.reminderId());
             verifyNoMoreInteractions(reminderRepository);
             verifyNoInteractions(reminderMapper, reminderSchedulerService);
         }
@@ -200,7 +218,7 @@ class ReminderServiceImplTest {
             when(reminderRepository.findById(1L)).thenReturn(Optional.of(reminder));
             when(reminderMapper.toDto(reminder)).thenReturn(reminderDto);
 
-            ReminderDto result = reminderService.getReminderById(1L);
+            ReminderDto result = reminderService.getReminderById(1L, userLogin);
             assertThat(result).isNotNull().isEqualTo(reminderDto);
 
             verify(reminderRepository).findById(1L);
@@ -211,7 +229,7 @@ class ReminderServiceImplTest {
         void reminderNotFound_ExceptionThrown() {
             when(reminderRepository.findById(1L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> reminderService.getReminderById(1L))
+            assertThatThrownBy(() -> reminderService.getReminderById(1L, userLogin))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Reminder not found");
 
@@ -227,7 +245,7 @@ class ReminderServiceImplTest {
         void reminderDeleted_Success() {
             when(reminderRepository.findById(1L)).thenReturn(Optional.of(reminder));
 
-            reminderService.deleteReminder(1L);
+            reminderService.deleteReminder(1L, userLogin);
 
             verify(reminderRepository).findById(1L);
             verify(reminderRepository).deleteById(1L);
@@ -238,23 +256,62 @@ class ReminderServiceImplTest {
         void reminderNotFound_ExceptionThrown() {
             when(reminderRepository.findById(1L)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> reminderService.getReminderById(1L))
+            assertThatThrownBy(() -> reminderService.deleteReminder(1L, userLogin))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("Reminder not found");
+                    .hasMessage("Reminder does not exist");
 
             verify(reminderRepository).findById(1L);
-            verifyNoInteractions(reminderMapper);
+            verifyNoInteractions(reminderMapper, reminderSchedulerService);
         }
     }
 
     @Nested
     class FindAllTests {
+        private LocalDateTime to;
+        private LocalDateTime from;
+        private Pageable pageable;
+        private Page<Reminder> reminderPage;
+        private List<Reminder> reminderList;
+        private List<ReminderDto> dtoList;
 
-//        @Test
-//        void findAll_allDataPresent_Success() {
-//            //Pageable pageable = PageRequest.of()
-//            //Page<ReminderDto> result = reminderService.findAll("search", to, from);
-//
-//        }
+        @BeforeEach
+        void setUp() {
+            to = LocalDateTime.now().plusDays(5L);
+            from = LocalDateTime.now().minusDays(5L);
+            pageable = PageRequest.of(0, 10, Sort.by("remind"));
+
+            reminderList = new ArrayList<>();
+            reminderList.add(reminder);
+            reminderList.add(createTestReminder(
+                    2L, "second title", "second description", futureTime, user));
+            reminderList.add(createTestReminder(
+                    3L, "third title", "third description", futureTime, user));
+
+            reminderPage = new PageImpl<>(reminderList, pageable, reminderList.size());
+
+            dtoList = new ArrayList<>();
+            dtoList.add(reminderDto);
+            dtoList.add(new ReminderDto(
+                    2L, 1L, "second title", "second description", futureTime));
+            dtoList.add(new ReminderDto(
+                    3L, 1L, "third title", "third description", futureTime));
+
+        }
+
+        @Test
+        void findAll_allDataPresent_Success() {
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.of(user));
+            when(reminderRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(reminderPage);
+            when(reminderMapper.toDto(reminderList.get(0))).thenReturn(dtoList.get(0));
+            when(reminderMapper.toDto(reminderList.get(1))).thenReturn(dtoList.get(1));
+            when(reminderMapper.toDto(reminderList.get(2))).thenReturn(dtoList.get(2));
+
+            Page<ReminderDto> result = reminderService.findAll(userLogin, "search", to, from, pageable);
+            assertThat(result.getContent().size()).isEqualTo(3);
+            Assertions.assertEquals("Title", result.getContent().get(0).title());
+
+            verify(userRepository).findByEmail(userLogin);
+            verify(reminderRepository).findAll(any(Specification.class), eq(pageable));
+        }
     }
 }

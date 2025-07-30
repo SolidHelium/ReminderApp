@@ -7,8 +7,8 @@ import com.reminderapp.reminder.dto.UserDto;
 
 public interface UserService {
     UserDto createUser(CreateUserRequest request);
-    UserDto updateUser(UpdateUserRequest request, long id);
-    UserDto getUserById(long id);
-    void deleteUser(long id);
-    void changePassword(long id, ChangePasswordRequest request);
+    UserDto getUserByLogin(String userLogin);
+    UserDto updateUser(UpdateUserRequest request, String userLogin);
+    void changePassword(String userLogin, ChangePasswordRequest request);
+    void deleteUser(String userLogin);
 }

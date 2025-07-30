@@ -36,6 +36,7 @@ class UserServiceImplTest {
 
     private User user;
     private UserDto userDto;
+    private String userLogin = "email";
 
     @BeforeEach
     void setUp() {
@@ -157,14 +158,14 @@ class UserServiceImplTest {
             updatedUser.setPassword("valid_password");
             updatedUser.setTelegram("new telegram");
 
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.of(user));
             when(userRepository.save(user)).thenReturn(updatedUser);
             when(userMapper.toDto(updatedUser)).thenReturn(updatedUserDto);
 
-            UserDto result = userService.updateUser(updateUserRequest, 1L);
+            UserDto result = userService.updateUser(updateUserRequest, userLogin);
             assertThat(result).isNotNull().isEqualTo(updatedUserDto);
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verify(userMapper).updateUser(updateUserRequest, user);
             verify(userRepository).save(user);
             verify(userMapper).toDto(updatedUser);
@@ -172,41 +173,41 @@ class UserServiceImplTest {
 
         @Test
         void userNotFound_ExceptionThrown() {
-            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> userService.updateUser(updateUserRequest, 1L))
+            assertThatThrownBy(() -> userService.updateUser(updateUserRequest, userLogin))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("User with id 1 not found");
+                    .hasMessage("User with login " + userLogin + " not found");
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verifyNoInteractions(userMapper);
             verifyNoMoreInteractions(userRepository);
         }
     }
 
     @Nested
-    class GetUserByIdTests {
+    class GetUserByLoginTests {
         @Test
-        void getById_success() {
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        void getByLogin_success() {
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.of(user));
             when(userMapper.toDto(user)).thenReturn(userDto);
 
-            UserDto result = userService.getUserById(1L);
+            UserDto result = userService.getUserByLogin(userLogin);
             assertThat(result).isNotNull().isEqualTo(userDto);
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verify(userMapper).toDto(user);
         }
 
         @Test
-        void getById_UserNotFound_ExceptionThrown() {
-            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        void getByLogin_UserNotFound_ExceptionThrown() {
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> userService.getUserById(1L))
+            assertThatThrownBy(() -> userService.getUserByLogin(userLogin))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("User with id 1 not found");
+                    .hasMessage("User with login " + userLogin + " not found");
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verifyNoInteractions(userMapper);
         }
     }
@@ -215,23 +216,23 @@ class UserServiceImplTest {
     class deleteUserTests {
         @Test
         void deleteUser_success() {
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.of(user));
 
-            userService.deleteUser(1L);
+            userService.deleteUser(userLogin);
 
-            verify(userRepository).findById(1L);
-            verify(userRepository).deleteById(1L);
+            verify(userRepository).findByEmail(userLogin);
+            verify(userRepository).deleteById(user.getUserId());
         }
 
         @Test
         void deleteUser_userNotFound_ExceptionThrown() {
-            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> userService.deleteUser(1L))
+            assertThatThrownBy(() -> userService.deleteUser(userLogin))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("User already doesn't exist");
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verifyNoInteractions(userMapper);
         }
     }
@@ -244,13 +245,13 @@ class UserServiceImplTest {
 
         @Test
         void changePassword_Success() {
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.of(user));
             when(passwordEncoder.matches(changePasswordRequest.oldPassword(), user.getPassword())).thenReturn(true);
             when(passwordEncoder.encode(changePasswordRequest.newPassword())).thenReturn("valid_password");
 
-            userService.changePassword(1L, changePasswordRequest);
+            userService.changePassword(userLogin, changePasswordRequest);
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verify(passwordEncoder).matches(changePasswordRequest.oldPassword(), user.getPassword());
             verify(passwordEncoder).encode(changePasswordRequest.newPassword());
             verify(userRepository).save(user);
@@ -258,11 +259,11 @@ class UserServiceImplTest {
 
         @Test
         void changePassword_noUserFound_ExceptionThrown() {
-            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> userService.changePassword(1L, changePasswordRequest))
+            assertThatThrownBy(() -> userService.changePassword(userLogin, changePasswordRequest))
                     .isInstanceOf(RuntimeException.class)
-                    .hasMessage("User with id 1 not found");
+                    .hasMessage("User with login " + userLogin + " not found");
 
             verifyNoInteractions(passwordEncoder);
             verifyNoMoreInteractions(userRepository);
@@ -271,14 +272,14 @@ class UserServiceImplTest {
 
         @Test
         void changePassword_PasswordDoesNotMatch_ExceptionThrown() {
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+            when(userRepository.findByEmail(userLogin)).thenReturn(Optional.of(user));
             when(passwordEncoder.matches(changePasswordRequest.oldPassword(), user.getPassword())).thenReturn(false);
 
-            assertThatThrownBy(() -> userService.changePassword(1L, changePasswordRequest))
+            assertThatThrownBy(() -> userService.changePassword(userLogin, changePasswordRequest))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Password does not match");
 
-            verify(userRepository).findById(1L);
+            verify(userRepository).findByEmail(userLogin);
             verify(passwordEncoder).matches(changePasswordRequest.oldPassword(), user.getPassword());
             verifyNoMoreInteractions(userRepository, passwordEncoder);
         }

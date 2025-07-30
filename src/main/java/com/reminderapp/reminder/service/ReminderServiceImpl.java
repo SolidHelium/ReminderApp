@@ -81,26 +81,13 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    public void deleteReminder(long id, String userLogin) {
-        Reminder reminder = reminderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
-
-        if (!reminder.getUser().getEmail().equals(userLogin)) {
-            throw new RuntimeException("Not your reminder");
-        }
-        reminderRepo.deleteById(id);
-        schedulerService.cancelReminder(reminder);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Page<ReminderDto> findAll(
             String userLogin,
             String search,
             LocalDateTime from,
             LocalDateTime to,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Specification<Reminder> spec = Specification.where(null);
         User user = userRepo.findByEmail(userLogin)
                 .orElseThrow(() -> new RuntimeException("I don't know how but user does not exist"));
@@ -120,5 +107,17 @@ public class ReminderServiceImpl implements ReminderService {
 
         Page<Reminder> page = reminderRepo.findAll(spec, pageable);
         return page.map(mapper::toDto);
+    }
+
+    @Override
+    public void deleteReminder(long id, String userLogin) {
+        Reminder reminder = reminderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
+
+        if (!reminder.getUser().getEmail().equals(userLogin)) {
+            throw new RuntimeException("Not your reminder");
+        }
+        reminderRepo.deleteById(id);
+        schedulerService.cancelReminder(reminder);
     }
 }
