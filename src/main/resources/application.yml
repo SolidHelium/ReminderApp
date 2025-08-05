@@ -61,7 +61,7 @@ app:
 
     telegram:
       enabled: true
-      bot-token:
+      bot-token:  #TODO: <-- REMOVE before commit
       bot-username: java_reminder_app_bot
 
 
