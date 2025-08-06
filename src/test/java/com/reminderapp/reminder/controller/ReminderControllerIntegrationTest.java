@@ -12,7 +12,6 @@ import com.reminderapp.reminder.security.JwtUtil;
 import com.reminderapp.reminder.security.UserPrincipal;
 import com.reminderapp.reminder.service.ReminderSchedulerService;
 import com.reminderapp.reminder.specification.UserRole;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -157,6 +156,24 @@ public class ReminderControllerIntegrationTest {
                 .andExpect(status().isNoContent());
 
         assertThat(reminderRepo.findById(remId)).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    void listReminders_success() throws Exception {
+        Reminder secondReminder = new Reminder();
+        secondReminder.setTitle("Second title");
+        secondReminder.setDescription("Second description");
+        secondReminder.setRemind(LocalDateTime.now().plusDays(1L).withNano(0));
+        secondReminder.setUser(user);
+        secondReminder = reminderRepo.save(secondReminder);
+        long secondRemId = secondReminder.getReminderId();
+
+        mockMvc.perform(get("/api/v1/reminder/list?sort=title,desc")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].title").value("Title"))
+                .andExpect(jsonPath("$.content[1].title").value("Second title"));
     }
 
     @AfterEach
