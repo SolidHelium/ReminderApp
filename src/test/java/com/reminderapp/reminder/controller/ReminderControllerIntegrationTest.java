@@ -14,6 +14,7 @@ import com.reminderapp.reminder.service.ReminderSchedulerService;
 import com.reminderapp.reminder.specification.UserRole;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,7 +27,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -36,6 +39,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+//@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -54,6 +58,7 @@ public class ReminderControllerIntegrationTest {
     private Reminder reminder;
     private String token;
     private long remId;
+    private DateTimeFormatter formatter;
 
     @BeforeEach
     void setUp() {
@@ -75,6 +80,8 @@ public class ReminderControllerIntegrationTest {
         reminder.setUser(user);
         reminder = reminderRepo.save(reminder);
         remId = reminder.getReminderId();
+
+        //formatter = DateTimeFormatter.ofPattern("");
 
         doNothing().when(schedulerService).scheduleReminder(any(Reminder.class));
         doNothing().when(schedulerService).rescheduleReminder(any(Reminder.class));

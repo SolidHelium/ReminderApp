@@ -18,4 +18,7 @@ spring:
 
   quartz:
     job-store-type: memory
-    #auto-startup: false
+
+  mail:
+    username: fakeemail@email.com
+    password: fakeemailpassword
