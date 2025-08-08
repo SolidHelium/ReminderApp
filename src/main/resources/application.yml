@@ -36,7 +36,6 @@ spring:
 #          threadPool:
 #            threadCount: 10
 
-  # TODO: remove email and password BEFORE COMMIT
   mail:
     host: smtp.gmail.com
     port: 587
@@ -56,13 +55,12 @@ app:
   notification:
     email:
       enabled: true
-      from: sender-email@mail.com # This shit set incorrectly but it somehow works
+      from: sender-email@mail.com # This shit set incorrectly but it somehow works (And does not work without it)
 
     telegram:
       enabled: true
-      bot-token:
+      bot-token: 7962856733:AAErFipKAGaC-4iPTsDghW47l9VsenA7eZU
       bot-username: java_reminder_app_bot
-
 
 logging:
   level:
