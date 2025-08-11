@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.security.Principal;
 
 @AllArgsConstructor
 @RestController
@@ -24,26 +25,37 @@ public class UserController {
         return ResponseEntity.created(location).body(userDto);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
-        userService.deleteUser(id);
+    @GetMapping
+    public ResponseEntity<UserDto> getUser(Principal principal) {
+        return ResponseEntity.ok(userService.getUserByLogin(principal.getName()));
+    }
+
+    @PutMapping
+    public ResponseEntity<UserDto> updateUser(Principal principal, @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(userService.updateUser(request, principal.getName()));
+    }
+
+    @PutMapping("/changePassword")
+    public ResponseEntity<Void> changePassword(Principal principal, @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(principal.getName(), request);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUser(@PathVariable long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest request) {
-        return ResponseEntity.ok(userService.updateUser(request, id));
-    }
-
-    @PutMapping("/{id}/changePassword")
-    public ResponseEntity<Void> changePassword(@PathVariable long id, @RequestBody ChangePasswordRequest request) {
-        userService.changePassword(id, request);
+    @DeleteMapping
+    public ResponseEntity<Void> deleteUser(Principal principal) {
+        userService.deleteUser(principal.getName());
         return ResponseEntity.noContent().build();
     }
+
+// FOR ADMINS
+//    @GetMapping("/{id}")
+//    public ResponseEntity<UserDto> getUser(@PathVariable long id) {
+//        return ResponseEntity.ok(userService.getUserById(id));
+//    }
+
+//@PutMapping("/{id}")
+//public ResponseEntity<UserDto> updateUser(@PathVariable long id, @RequestBody UpdateUserRequest request) {
+//    return ResponseEntity.ok(userService.updateUser(request, id));
+//}
 
 }

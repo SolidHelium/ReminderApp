@@ -1,16 +1,22 @@
 package com.reminderapp.reminder.specification;
 
 import com.reminderapp.reminder.entity.Reminder;
+import com.reminderapp.reminder.entity.User;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 
 public class ReminderSpecs {
+    public static Specification<Reminder> belongsTo(User user) {
+        return ((root, query, criteriaBuilder) -> {
+            Predicate predicate = criteriaBuilder.equal(root.get("user"), user);
+            return predicate;
+        });
+    }
 
     public static Specification<Reminder> hasWord(String word) {
         return (root, query, criteriaBuilder) -> {
-
             String pattern = "%" + word.toLowerCase() + "%";
             Predicate predicate = criteriaBuilder.or(
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern),

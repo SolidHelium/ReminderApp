@@ -40,37 +40,45 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(UpdateUserRequest request, long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+    @Transactional(readOnly = true)
+    public UserDto getUserByLogin(String userLogin) {
+        User user = userRepository.findByEmail(userLogin)
+                .orElseThrow(() -> new RuntimeException("User with login " + userLogin + " not found"));
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserDto updateUser(UpdateUserRequest request, String userLogin) {
+        User user = userRepository.findByEmail(userLogin)
+                .orElseThrow(() -> new RuntimeException("User with login " + userLogin + " not found"));
         userMapper.updateUser(request, user);
         User updated = userRepository.save(user);
         return userMapper.toDto(updated);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UserDto getUserById(long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
-        return userMapper.toDto(user);
-    }
-
-    @Override
-    public void deleteUser(long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User already doesn't exist"));
-        userRepository.deleteById(id);
-    }
-
-    @Override
-    public void changePassword(long id, ChangePasswordRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+    public void changePassword(String userLogin, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(userLogin)
+                .orElseThrow(() -> new RuntimeException("User with login " + userLogin + " not found"));
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
             throw new RuntimeException("Password does not match");
         }
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
     }
+
+    @Override
+    public void deleteUser(String userLogin) {
+        User user = userRepository.findByEmail(userLogin)
+                .orElseThrow(() -> new RuntimeException("User already doesn't exist"));
+        userRepository.deleteById(user.getUserId());
+    }
+
+//    @Override
+//    @Transactional(readOnly = true)
+//    public UserDto getUserById(long id) {
+//        User user = userRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("User with id " + id + " not found"));
+//        return userMapper.toDto(user);
+//    }
 }

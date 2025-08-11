@@ -3,6 +3,8 @@ package com.reminderapp.reminder.service;
 import com.reminderapp.reminder.entity.Reminder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -11,6 +13,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Service
 @Slf4j
+//@ConditionalOnProperty(name = "app.notification.telegram.enabled", havingValue = "true")
+@Profile("!test")
 public class TelegramNotificationService extends TelegramLongPollingBot implements NotificationService {
     private boolean isEnabled;
     private String botUserName;

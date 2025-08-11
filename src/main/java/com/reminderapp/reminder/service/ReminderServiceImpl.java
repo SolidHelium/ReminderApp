@@ -30,8 +30,8 @@ public class ReminderServiceImpl implements ReminderService {
     //TODO: Proper exception handling
 
     @Override
-    public ReminderDto createReminder(CreateReminderRequest request) {
-        User user = userRepo.findById(request.userId())
+    public ReminderDto createReminder(CreateReminderRequest request, String userLogin) {
+        User user = userRepo.findByEmail(userLogin)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (request.remind().isBefore(LocalDateTime.now())) {
@@ -45,10 +45,25 @@ public class ReminderServiceImpl implements ReminderService {
     }
 
     @Override
-    public ReminderDto updateReminder(UpdateReminderRequest request) {
+    @Transactional(readOnly = true)
+    public ReminderDto getReminderById(long id, String userLogin) {
+        Reminder reminder = reminderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reminder not found"));
+
+        if (!reminder.getUser().getEmail().equals(userLogin)) {
+            throw new RuntimeException("Not your reminder");
+        }
+        return mapper.toDto(reminder);
+    }
+
+    @Override
+    public ReminderDto updateReminder(UpdateReminderRequest request, String userLogin) {
         Reminder reminder = reminderRepo.findById(request.reminderId())
                 .orElseThrow(() -> new RuntimeException("Reminder not found"));
 
+        if (!reminder.getUser().getEmail().equals(userLogin)) {
+            throw new RuntimeException("Not your reminder");
+        }
         ReminderDto dto = new ReminderDto(
                 request.reminderId(),
                 reminder.getUser().getUserId(),
@@ -56,6 +71,9 @@ public class ReminderServiceImpl implements ReminderService {
                 request.description(),
                 request.remind());
 
+        if (dto.remind().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Reminder date and time should be in the future");
+        }
         mapper.updateEntity(dto, reminder);
         Reminder updated = reminderRepo.save(reminder);
         schedulerService.rescheduleReminder(updated);
@@ -64,25 +82,16 @@ public class ReminderServiceImpl implements ReminderService {
 
     @Override
     @Transactional(readOnly = true)
-    public ReminderDto getReminderById(long id) {
-        Reminder reminder = reminderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder not found"));
-        //sender.sendAllNotifications(reminder);//TODO: <-- REMOVE
-        return mapper.toDto(reminder);
-    }
-
-    @Override
-    public void deleteReminder(long id) {
-        Reminder reminder = reminderRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
-        reminderRepo.deleteById(id);
-        schedulerService.cancelReminder(reminder);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<ReminderDto> findAll(String search, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+    public Page<ReminderDto> findAll(
+            String userLogin,
+            String search,
+            LocalDateTime from,
+            LocalDateTime to,
+            Pageable pageable) {
         Specification<Reminder> spec = Specification.where(null);
+        User user = userRepo.findByEmail(userLogin)
+                .orElseThrow(() -> new RuntimeException("I don't know how but user does not exist"));
+        spec = Specification.where(spec.and(ReminderSpecs.belongsTo(user)));
 
         if (search != null && !search.isBlank()) {
             spec = Specification.where(spec.and(ReminderSpecs.hasWord(search)));
@@ -98,5 +107,17 @@ public class ReminderServiceImpl implements ReminderService {
 
         Page<Reminder> page = reminderRepo.findAll(spec, pageable);
         return page.map(mapper::toDto);
+    }
+
+    @Override
+    public void deleteReminder(long id, String userLogin) {
+        Reminder reminder = reminderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reminder does not exist"));
+
+        if (!reminder.getUser().getEmail().equals(userLogin)) {
+            throw new RuntimeException("Not your reminder");
+        }
+        reminderRepo.deleteById(id);
+        schedulerService.cancelReminder(reminder);
     }
 }
