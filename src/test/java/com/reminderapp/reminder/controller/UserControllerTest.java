@@ -88,13 +88,14 @@ class UserControllerTest {
                 "new email",
                 "new telegram"
         );
-        UserDto updatedUserDto = new UserDto(
-                1L,
-                "new name",
-                UserRole.USER,
-                "new email",
-                "new telegram"
-        );
+
+        UserDto updatedUserDto = UserDto.builder()
+                .userId(1L).name("new name")
+                .role(UserRole.USER)
+                .email("new email")
+                .telegram("new telegram")
+                .build();
+
         when(userService.updateUser(request, LOGIN)).thenReturn(updatedUserDto);
 
         mockMvc.perform(put("/api/v1/user")
