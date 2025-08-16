@@ -36,16 +36,13 @@ spring:
           auth: true
           starttls:
             enable: true
-
 app:
   jwt:
     secret: ${JWT_SECRET}
-
   notification:
     email:
       enabled: true
       from: sender-email@mail.com # This shit set incorrectly but it somehow works (And does not work without it)
-
     telegram:
       enabled: true
       bot-token: ${TELEGRAM_BOT_TOKEN}

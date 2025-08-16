@@ -19,6 +19,6 @@ spring:
   quartz:
     job-store-type: memory
 
-  mail:
-    username: fakeemail@email.com
-    password: fakeemailpassword
+app:
+  jwt:
+    secret: ${JWT_SECRET:dummy-fake-super-secret-key-that-is-at-least-256-bits-for-testing}
