@@ -13,7 +13,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Service
 @Slf4j
-//@ConditionalOnProperty(name = "app.notification.telegram.enabled", havingValue = "true")
 @Profile("!test")
 public class TelegramNotificationService extends TelegramLongPollingBot implements NotificationService {
     private boolean isEnabled;

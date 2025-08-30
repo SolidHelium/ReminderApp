@@ -10,6 +10,7 @@ import com.reminderapp.reminder.repository.RemindersRepository;
 import com.reminderapp.reminder.repository.UserRepository;
 import com.reminderapp.reminder.security.JwtUtil;
 import com.reminderapp.reminder.security.UserPrincipal;
+import com.reminderapp.reminder.service.AllTypesNotificationSenderService;
 import com.reminderapp.reminder.service.ReminderSchedulerService;
 import com.reminderapp.reminder.specification.UserRole;
 import org.junit.jupiter.api.AfterEach;
@@ -39,7 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -53,6 +53,7 @@ public class ReminderControllerIntegrationTest {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtUtil jwtUtil;
     @MockitoBean private ReminderSchedulerService schedulerService;
+    @MockitoBean private AllTypesNotificationSenderService senderService;
 
     private User user;
     private Reminder reminder;

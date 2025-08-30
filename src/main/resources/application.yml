@@ -1,11 +1,13 @@
 spring:
   application:
     name: reminderApp
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/reminderdb
-    username: reminder_user
-    password: somepassword123
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -22,44 +24,28 @@ spring:
     job-store-type: jdbc
     jdbc:
       initialize-schema: never
-#    properties: #TODO: Delete this I guess... Or delete properties from QuartzConfig and set them here properly
-#      org:
-#        quartz:
-#          scheduler:
-#            instanceName: ReminderScheduler
-#            instanceId: AUTO
-#          jobStore:
-#            class: org.quartz.impl.jdbcjobstore.JobStoreTX
-#            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-#            tablePrefix: QRTZ_
-#            isClustered: false
-#          threadPool:
-#            threadCount: 10
 
   mail:
     host: smtp.gmail.com
     port: 587
     username: ${SENDER_EMAIL}
-    password: ${SENDER_EMIL_PASSWORD}
+    password: ${SENDER_EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-
 app:
   jwt:
-    secret: "my-super-secret-key-that-is-at-least-32-characters-long"
-
+    secret: ${JWT_SECRET}
   notification:
     email:
       enabled: true
-      from: sender-email@mail.com # This shit set incorrectly but it somehow works (And does not work without it)
-
+      from: ${SENDER_EMAIL}
     telegram:
       enabled: true
-      bot-token: 7962856733:AAErFipKAGaC-4iPTsDghW47l9VsenA7eZU
+      bot-token: ${TELEGRAM_BOT_TOKEN}
       bot-username: java_reminder_app_bot
 
 logging:

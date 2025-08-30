@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Configuration
-//@ConditionalOnProperty(name = "app.notification.telegram.enabled", havingValue = "true")
 @Profile("!test")
 public class TelegramBotConfig {
 

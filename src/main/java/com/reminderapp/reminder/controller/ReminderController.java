@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @RequestMapping("/api/v1/reminder")
 public class ReminderController {
     private final ReminderService reminderService;
-    //private final UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<ReminderDto> create(@RequestBody CreateReminderRequest request, Principal principal) {
